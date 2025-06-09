@@ -11,6 +11,7 @@ import { routeTree } from "./routeTree.gen"
 
 import { ApiError, OpenAPI } from "./client"
 import { CustomProvider } from "./components/ui/provider"
+import { toaster } from "./components/ui/toaster"
 
 OpenAPI.BASE = import.meta.env.VITE_API_URL
 OpenAPI.TOKEN = async () => {
@@ -18,9 +19,21 @@ OpenAPI.TOKEN = async () => {
 }
 
 const handleApiError = (error: Error) => {
-  if (error instanceof ApiError && [401, 403].includes(error.status)) {
-    localStorage.removeItem("access_token")
-    window.location.href = "/login"
+  if (error instanceof ApiError) {
+    if (error.status === 401) {
+      // Unauthorized - redirect to login
+      localStorage.removeItem("access_token")
+      window.location.href = "/login"
+    } else if (error.status === 403) {
+      // Forbidden - show specific error message without redirect
+      const errorDetail = (error.body as any)?.detail || "Access forbidden"
+      toaster.create({
+        title: "Access Denied",
+        description: errorDetail,
+        type: "error",
+        duration: 6000,
+      })
+    }
   }
 }
 const queryClient = new QueryClient({

@@ -1,5 +1,10 @@
 services:
-
+  dev:
+    image: travelplanner-devcontainer:latest
+    tty: true                 # <--- Keep container alive
+    stdin_open: true          # <--- Allows interactive input
+    volumes:
+      - .:/workspace
   db:
     image: postgres:17
     restart: always
